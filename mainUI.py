@@ -89,7 +89,7 @@ class systray(QSystemTrayIcon):
         self.menu.addAction(self.actionquit)
         self.setContextMenu(self.menu)
 
-        self.setIcon(QtGui.QIcon("C:\\Users\\13598\\Desktop\\res\\connect.ico"))
+        self.setIcon(QtGui.QIcon(".\\res\\connect.ico"))
         self.mainwindow.setWindowFlag(QtCore.Qt.WindowType.FramelessWindowHint)
 
     def showui(self):
