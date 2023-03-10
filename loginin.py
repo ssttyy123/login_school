@@ -53,7 +53,6 @@ class Loginof(object):
     def on_login(self):
         self.data["DDDDD"] = ",0," + self.schoolid + "@" + self.operator
         self.data['upass'] = self.pas
-        print(self.schoolid, self.pas, self.operator)
         response = requests.post(self.url, self.data, self.header)
         rt = response.status_code
         print(response.url)
