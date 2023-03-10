@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import *
 import sys
 
 import loginin
+import logindata
 
 
 def createsis(mainwindow, userid, pas, operator):
@@ -33,7 +34,17 @@ class Mainwindow(QWidget):
         self.op_cbb.addItem("cmcc")
         self.op_cbb.addItem("chinanet")
 
+        # 提交按钮
         self.subbutton = QPushButton("submit")
+
+        # 用户历史数据
+        '''{"id": "templateUser",
+                 "pas": "123456",
+                 "ope": 0}'''
+        self.database = logindata.usersdata()
+        self.enter_userid.setText(self.database.rutdefaultuesr()['id'])
+        self.enter_pas.setText(self.database.rutdefaultuesr()['pas'])
+        self.op_cbb.setCurrentIndex(self.database.rutdefaultuesr()['ope'])
 
     def initui(self):
         # 标签列
