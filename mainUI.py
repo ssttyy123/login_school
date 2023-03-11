@@ -123,23 +123,25 @@ class systray(QSystemTrayIcon):
         mainwindow.subbutton.clicked.connect(lambda: self.onclicksub())
 
     def onclicksub(self):
-        rt = createsis(self.mainwindow, self.mainwindow.enter_userid.text(),
-                       self.mainwindow.enter_pas.text(),
-                       self.mainwindow.op_cbb.currentText())
-        if self.mainwindow.startCheckbox.isChecked():
-            writinpath("open")
-            self.autoflag = 1
-        elif not self.mainwindow.startCheckbox.isChecked():
-            writinpath("close")
-            self.autoflag = 0
-        if rt <= 1:
-            self.mainwindow.database.changefault(self.mainwindow.enter_userid.text(),
-                                                 self.mainwindow.enter_pas.text(),
-                                                 self.mainwindow.op_cbb.currentIndex(),
-                                                 self.autoflag)
-            self.mainwindow.showMinimized()
-            self.mainwindow.setWindowFlags(QtCore.Qt.WindowType.SplashScreen | QtCore.Qt.WindowType.FramelessWindowHint)
-            self.mainwindow.hide()
+        if self.mainwindow.enter_userid.text() != 'templateUser':
+            rt = createsis(self.mainwindow, self.mainwindow.enter_userid.text(),
+                           self.mainwindow.enter_pas.text(),
+                           self.mainwindow.op_cbb.currentText())
+            if self.mainwindow.startCheckbox.isChecked():
+                writinpath("open")
+                self.autoflag = 1
+            elif not self.mainwindow.startCheckbox.isChecked():
+                writinpath("close")
+                self.autoflag = 0
+            if rt <= 1:
+                self.mainwindow.database.changefault(self.mainwindow.enter_userid.text(),
+                                                     self.mainwindow.enter_pas.text(),
+                                                     self.mainwindow.op_cbb.currentIndex(),
+                                                     self.autoflag)
+                self.mainwindow.showMinimized()
+                self.mainwindow.setWindowFlags(
+                    QtCore.Qt.WindowType.SplashScreen | QtCore.Qt.WindowType.FramelessWindowHint)
+                self.mainwindow.hide()
 
     def creatMenu(self):
         self.menu = QMenu()
