@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['mainUI.py', 'logindata.py', 'loginin.py'],
+    ['mainUI.py', 'logindata.py', 'loginin.py', 'warningbox.py'],
     pathex=[],
     binaries=[],
     datas=[],

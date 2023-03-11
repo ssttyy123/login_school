@@ -8,16 +8,33 @@ import os
 
 import loginin
 import logindata
+import warningbox
 
 
 def createsis(mainwindow, userid, pas, operator):
     # 创建会话类
     logina = loginin.Loginof(userid, pas, operator)
     rt = logina.on_login()
-    # 1 IP终端已经在线
-    # 2 验证失败
-    # 3 登录成功
+    wmess = warningbox.Warningbox(rt)
+    wmess.jugmess(mainwindow)
     return rt
+
+
+def quitwin():
+    QCoreApplication.exit(0)
+
+
+def writinpath(situ):
+    start_path = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup'
+    flag = os.path.exists(start_path + r"\login_school.bat")
+    propath = os.path.abspath('.')
+    if flag:
+        if situ == "close":
+            os.remove(start_path + r"\login_school.bat")
+    else:
+        if situ == "open":
+            print("adminper.exe " + propath + ' ' + os.path.basename(sys.argv[0]))
+            os.system("adminper.exe " + propath + ' ' + os.path.basename(sys.argv[0]))
 
 
 class Mainwindow(QWidget):
@@ -35,8 +52,8 @@ class Mainwindow(QWidget):
         # 运营商选择
         self.text_oper = QLabel('Select operator:')
         self.op_cbb = QComboBox()
-        self.op_cbb.addItem("cmcc")
-        self.op_cbb.addItem("chinanet")
+        self.op_cbb.addItem("中国移动")
+        self.op_cbb.addItem("中国联通")
 
         # 提交按钮
         self.subbutton = QPushButton("submit")
@@ -91,23 +108,6 @@ class Mainwindow(QWidget):
         self.show()
 
 
-def quitwin():
-    QCoreApplication.exit(0)
-
-
-def writinpath(situ):
-    start_path = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup'
-    flag = os.path.exists(start_path + r"\login_school.bat")
-    propath = os.path.realpath(sys.argv[0])
-    if flag:
-        if situ == "close":
-            os.remove(start_path + r"\login_school.bat")
-    else:
-        if situ == "open":
-            print("adminper.exe " + propath + ' ' + os.path.basename(sys.argv[0]))
-            os.system("adminper.exe " + propath + ' ' + os.path.basename(sys.argv[0]))
-
-
 class systray(QSystemTrayIcon):
     def __init__(self, mainwindow, parent=None):
         super(QSystemTrayIcon, self).__init__(parent)
@@ -123,21 +123,23 @@ class systray(QSystemTrayIcon):
         mainwindow.subbutton.clicked.connect(lambda: self.onclicksub())
 
     def onclicksub(self):
-        createsis(self.mainwindow, self.mainwindow.enter_userid.text(),
-                  self.mainwindow.enter_pas.text(),
-                  self.mainwindow.op_cbb.currentText())
+        rt = createsis(self.mainwindow, self.mainwindow.enter_userid.text(),
+                       self.mainwindow.enter_pas.text(),
+                       self.mainwindow.op_cbb.currentText())
         if self.mainwindow.startCheckbox.isChecked():
             writinpath("open")
             self.autoflag = 1
         elif not self.mainwindow.startCheckbox.isChecked():
             writinpath("close")
             self.autoflag = 0
-        self.mainwindow.database.changefault(self.mainwindow.enter_userid.text(),
-                                             self.mainwindow.enter_pas.text(),
-                                             self.mainwindow.op_cbb.currentIndex(),
-                                             self.autoflag)
-        self.mainwindow.showMinimized()
-        self.mainwindow.setWindowFlags(QtCore.Qt.WindowType.SplashScreen | QtCore.Qt.WindowType.FramelessWindowHint)
+        if rt <= 1:
+            self.mainwindow.database.changefault(self.mainwindow.enter_userid.text(),
+                                                 self.mainwindow.enter_pas.text(),
+                                                 self.mainwindow.op_cbb.currentIndex(),
+                                                 self.autoflag)
+            self.mainwindow.showMinimized()
+            self.mainwindow.setWindowFlags(QtCore.Qt.WindowType.SplashScreen | QtCore.Qt.WindowType.FramelessWindowHint)
+            self.mainwindow.hide()
 
     def creatMenu(self):
         self.menu = QMenu()
