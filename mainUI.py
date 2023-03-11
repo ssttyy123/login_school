@@ -1,6 +1,3 @@
-import win32api
-import winreg
-import win32con
 from PyQt6 import QtGui, QtCore
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QAction
@@ -21,25 +18,6 @@ def createsis(mainwindow, userid, pas, operator):
     # 2 验证失败
     # 3 登录成功
     return rt
-
-
-def auto_start(situ):
-    # (0,1,2)存在键，不存在键，权限不足
-    reg_path = r'Software\Microsoft\Windows\CurrentVersion\Run'
-    execpath = os.path.realpath(sys.argv[0])
-    key = winreg.OpenKey(win32con.HKEY_CURRENT_USER, reg_path, 0, win32con.KEY_ALL_ACCESS)
-    try:
-        rt = winreg.QueryValueEx(key, 'login_school')[1]
-        # 存在键
-        if situ == "close":
-            if rt == 1:
-                win32api.RegDeleteValue(key, "login_school")
-                win32api.RegCloseKey(key)
-    except FileNotFoundError as e:
-        # 不存在键
-        if situ == "open":
-            win32api.RegSetValueEx(key, "login_school", 0, win32con.REG_SZ, execpath)
-            win32api.RegCloseKey(key)
 
 
 class Mainwindow(QWidget):
@@ -117,6 +95,19 @@ def quitwin():
     QCoreApplication.exit(0)
 
 
+def writinpath(situ):
+    start_path = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup'
+    flag = os.path.exists(start_path + r"\login_school.bat")
+    propath = os.path.realpath(sys.argv[0])
+    if flag:
+        if situ == "close":
+            os.remove(start_path + r"\login_school.bat")
+    else:
+        if situ == "open":
+            print("adminper.exe " + propath + ' ' + os.path.basename(sys.argv[0]))
+            os.system("adminper.exe " + propath + ' ' + os.path.basename(sys.argv[0]))
+
+
 class systray(QSystemTrayIcon):
     def __init__(self, mainwindow, parent=None):
         super(QSystemTrayIcon, self).__init__(parent)
@@ -136,10 +127,10 @@ class systray(QSystemTrayIcon):
                   self.mainwindow.enter_pas.text(),
                   self.mainwindow.op_cbb.currentText())
         if self.mainwindow.startCheckbox.isChecked():
-            auto_start("open")
+            writinpath("open")
             self.autoflag = 1
         elif not self.mainwindow.startCheckbox.isChecked():
-            auto_start("close")
+            writinpath("close")
             self.autoflag = 0
         self.mainwindow.database.changefault(self.mainwindow.enter_userid.text(),
                                              self.mainwindow.enter_pas.text(),
