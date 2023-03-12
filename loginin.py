@@ -74,7 +74,9 @@ class Loginof(object):
     def on_login(self):
         self.data["DDDDD"] = ",0," + self.schoolid + "@" + self.opelist[self.operator]
         self.data['upass'] = self.pas
-        response = requests.post(self.url, self.data, self.header)
+        proxies = {'http': None,
+                   'https': None}
+        response = requests.post(self.url, self.data, self.header, proxies=proxies)
         rt = response.status_code
         print(response.url)
         if response.url in self.warningmess:
