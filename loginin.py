@@ -1,15 +1,16 @@
+import os
+import re
 import time
 
 import requests
-import re
-import os
-from tkinter import messagebox
 
 
 class Loginof(object):
+    wlanip = ""
+
     wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn" \
-              "&iTermType=1&wlanuserip=10.163.177.171&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00" \
-              "-00-00-00-00&ip=10.163.177.171&enAdvert=0&queryACIP=0&loginMethod=1"
+              "&iTermType=1&wlanuserip=" + wlanip + "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00" \
+                                                    "-00-00-00-00&ip=" + wlanip + "&enAdvert=0&queryACIP=0&loginMethod=1"
 
     url = "http://10.10.244.11:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=10.10.244.11&iTermType=1" \
           "&wlanuserip=10.161.164.49&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=10" \
@@ -43,14 +44,18 @@ class Loginof(object):
         "http://10.10.244.11:80/2.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
         "&mac=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=Mg%3D%3D": 1,
 
+        "http://p.njupt.edu.cn:80/2.htm?wlanuserip=" + wlanip + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
+                                                                "&mac=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg"
+                                                                "=Mg%3D%3D": 1,
+
         "http://10.10.244.11:80/3.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
         "&mac=00-00-00-00-00-00&session=": 0,
 
         "http://p.njupt.edu.cn/3.htm?wlanuserip=10.163.135.80&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X"
         "&account=B21120202@cmcc": 0,
 
-        "http://p.njupt.edu.cn:80/3.htm?wlanuserip=10.163.177.171&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
-        "&mac=00-00-00-00-00-00&session=": 0,
+        "http://p.njupt.edu.cn:80/3.htm?wlanuserip=" + wlanip + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
+                                                                "&mac=00-00-00-00-00-00&session=": 0,
 
         "http://10.10.244.11/2.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac"
         "=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=bGRhcCBhdXRoIGVycm9y": 2,
@@ -77,6 +82,25 @@ class Loginof(object):
         self.schoolid = schoolid
         self.pas = pas
         self.operator = operator
+        result = os.popen("ipconfig").read()
+        pat2 = "无线局域网适配器 WLAN:?\n.*\n.*\n.*\n.*IPv4 地址 [\. ]+:(.*)"
+        self.wlanip = re.findall(pat2, result)[0]
+        self.wlanip = ''.join(self.wlanip.split())
+        self.wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn" \
+                       "&iTermType=1&wlanuserip=" + self.wlanip + \
+                       "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=" + self.wlanip + \
+                       "&enAdvert=0&queryACIP=0&loginMethod=1"
+        self.warningmess["http://p.njupt.edu.cn:80/3.htm?wlanuserip="
+                         + self.wlanip
+                         + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac=00-00-00-00-00-00&session="] \
+            = self.warningmess.pop("http://p.njupt.edu.cn:80/3.htm?wlanuserip=&wlanacname=XL-BRAS-SR8806-X&wlanacip"
+                                   "=10.255.252.150&mac=00-00-00-00-00-00&session=")
+        self.warningmess["http://p.njupt.edu.cn:80/2.htm?wlanuserip="
+                         + self.wlanip
+                         + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac=00-00-00-00-00-00&session" \
+                           "=&ACLogOut=5&ErrorMsg=Mg%3D%3D"] = self.warningmess.pop(
+            "http://p.njupt.edu.cn:80/2.htm?wlanuserip=&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac=00-00"
+            "-00-00-00-00&session=&ACLogOut=5&ErrorMsg=Mg%3D%3D")
 
     def showof(self):
         print(self.schoolid, self.pas, self.opelist[self.operator])
@@ -104,13 +128,11 @@ class Loginof(object):
             self.header["Host"] = "p.njupt.edu.cn:801"
             self.header["Origin"] = "http://p.njupt.edu.cn"
             self.header["Referer"] = "http://p.njupt.edu.cn/"
-            self.header["Connection"] = "close"
             flag = 2
         else:
             self.header["Host"] = "10.10.244.11:801"
             self.header["Origin"] = "http://10.10.244.11"
             self.header["Referer"] = "http://10.10.244.11/"
-            self.header["Connection"] = "keep-alive"
             flag = 1
 
         response = requests.post(self.url if flag == 1 else self.wifiurl, self.data, self.header, proxies=proxies)
@@ -119,6 +141,7 @@ class Loginof(object):
         if response.url in self.warningmess:
             return self.warningmess[response.url]
         else:
+            print(response.request)
             print(self.url if flag == 1 else self.wifiurl)
             print(wlan_type)
             print(self.data)

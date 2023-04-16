@@ -115,8 +115,10 @@ class systray(QSystemTrayIcon):
         self.autoflag = 1
         self.actionset = QAction("Setting", self)
         self.actionquit = QAction("Quit", self)
+        self.actionlogin = QAction("Login", self)
         self.actionset.triggered.connect(self.showui)
         self.actionquit.triggered.connect(quitwin)
+        self.actionlogin.triggered.connect(lambda: self.onclicksub)
         self.mainwindow = mainwindow
         self.creatMenu()
         # 提交按钮
@@ -146,6 +148,7 @@ class systray(QSystemTrayIcon):
     def creatMenu(self):
         self.menu = QMenu()
         self.menu.addAction(self.actionset)
+        self.menu.addAction(self.actionlogin)
         self.menu.addAction(self.actionquit)
         self.setContextMenu(self.menu)
 
