@@ -1,12 +1,19 @@
+import time
+
 import requests
+import re
+import os
 from tkinter import messagebox
 
 
 class Loginof(object):
+    wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn" \
+              "&iTermType=1&wlanuserip=10.163.177.171&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00" \
+              "-00-00-00-00&ip=10.163.177.171&enAdvert=0&queryACIP=0&loginMethod=1"
+
     url = "http://10.10.244.11:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=10.10.244.11&iTermType=1" \
           "&wlanuserip=10.161.164.49&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=10" \
-          ".161" \
-          ".164.49&enAdvert=0&queryACIP=0&loginMethod=1"
+          ".161.164.49&enAdvert=0&queryACIP=0&loginMethod=1"
 
     data = {"DDDDD": "",
             "upass": "",
@@ -22,7 +29,7 @@ class Loginof(object):
               "Accept-Encoding": "gzip, deflate",
               "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
               "Cache-Control": "max-age=0",
-              "Connection": "keep-alive",
+              "Connection": "close",
               "Content-Length": "173",
               "Content-Type": "application/x-www-form-urlencoded",
               "Host": "10.10.244.11:801",
@@ -30,7 +37,7 @@ class Loginof(object):
               "Referer": "http://10.10.244.11/",
               "Upgrade-Insecure-Requests": "1",
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                            "Chrome/110.0.0.0 Safari/537.36 Edg/110.0.1587.63"}
+                            "Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.46"}
 
     warningmess = {
         "http://10.10.244.11:80/2.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
@@ -41,6 +48,9 @@ class Loginof(object):
 
         "http://p.njupt.edu.cn/3.htm?wlanuserip=10.163.135.80&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X"
         "&account=B21120202@cmcc": 0,
+
+        "http://p.njupt.edu.cn:80/3.htm?wlanuserip=10.163.177.171&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
+        "&mac=00-00-00-00-00-00&session=": 0,
 
         "http://10.10.244.11/2.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac"
         "=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=bGRhcCBhdXRoIGVycm9y": 2,
@@ -76,10 +86,41 @@ class Loginof(object):
         self.data['upass'] = self.pas
         proxies = {'http': None,
                    'https': None}
-        response = requests.post(self.url, self.data, self.header, proxies=proxies)
+        # Wi-Fi mywlan 1/officwlan 2
+        flag = 0
+        result = os.popen('netsh WLAN show interfaces')
+        context = result.read()
+        if re.search("SSID                   :", context) is None:
+            while 1:
+                time.sleep(2)
+                result = os.popen('netsh WLAN show interfaces')
+                context = result.read()
+                if re.search("SSID                   :", context) is not None:
+                    break
+
+        wlan_type = context[re.search("SSID                   :", context).span()[1] + 1:
+                            re.search("BSSID", context).span()[0] - 5]
+        if wlan_type == "NJUPT-CMCC" or wlan_type == "NJUPT-CHINANET":
+            self.header["Host"] = "p.njupt.edu.cn:801"
+            self.header["Origin"] = "http://p.njupt.edu.cn"
+            self.header["Referer"] = "http://p.njupt.edu.cn/"
+            self.header["Connection"] = "close"
+            flag = 2
+        else:
+            self.header["Host"] = "10.10.244.11:801"
+            self.header["Origin"] = "http://10.10.244.11"
+            self.header["Referer"] = "http://10.10.244.11/"
+            self.header["Connection"] = "keep-alive"
+            flag = 1
+
+        response = requests.post(self.url if flag == 1 else self.wifiurl, self.data, self.header, proxies=proxies)
         rt = response.status_code
         print(response.url)
         if response.url in self.warningmess:
             return self.warningmess[response.url]
         else:
+            print(self.url if flag == 1 else self.wifiurl)
+            print(wlan_type)
+            print(self.data)
+            print(self.header)
             return 20
