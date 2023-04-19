@@ -40,32 +40,6 @@ class Loginof(object):
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                             "Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.46"}
 
-    warningmess = {
-        "http://10.10.244.11:80/2.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
-        "&mac=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=Mg%3D%3D": 1,
-
-        "http://p.njupt.edu.cn:80/2.htm?wlanuserip=" + wlanip + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
-                                                                "&mac=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg"
-                                                                "=Mg%3D%3D": 1,
-
-        "http://10.10.244.11:80/3.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
-        "&mac=00-00-00-00-00-00&session=": 0,
-
-        "http://p.njupt.edu.cn/3.htm?wlanuserip=10.163.135.80&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X"
-        "&account=B21120202@cmcc": 0,
-
-        "http://p.njupt.edu.cn:80/3.htm?wlanuserip=" + wlanip + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150"
-                                                                "&mac=00-00-00-00-00-00&session=": 0,
-
-        "http://10.10.244.11/2.htm?wlanuserip=10.161.164.49&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac"
-        "=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=bGRhcCBhdXRoIGVycm9y": 2,
-
-        "http://p.njupt.edu.cn/2.htm?wlanuserip=10.163.135.80&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac"
-        "=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=NTEy": 3,
-
-        "http://p.njupt.edu.cn/2.htm?wlanuserip=10.163.135.80&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac"
-        "=00-00-00-00-00-00&session=&ACLogOut=5&ErrorMsg=dXNlcmlkIGVycm9yMQ%3D%3D": 4
-    }
     '''
     0.You have successfully logged into our system.
     1.IP already online
@@ -90,17 +64,6 @@ class Loginof(object):
                        "&iTermType=1&wlanuserip=" + self.wlanip + \
                        "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=" + self.wlanip + \
                        "&enAdvert=0&queryACIP=0&loginMethod=1"
-        self.warningmess["http://p.njupt.edu.cn:80/3.htm?wlanuserip="
-                         + self.wlanip
-                         + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac=00-00-00-00-00-00&session="] \
-            = self.warningmess.pop("http://p.njupt.edu.cn:80/3.htm?wlanuserip=&wlanacname=XL-BRAS-SR8806-X&wlanacip"
-                                   "=10.255.252.150&mac=00-00-00-00-00-00&session=")
-        self.warningmess["http://p.njupt.edu.cn:80/2.htm?wlanuserip="
-                         + self.wlanip
-                         + "&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac=00-00-00-00-00-00&session" \
-                           "=&ACLogOut=5&ErrorMsg=Mg%3D%3D"] = self.warningmess.pop(
-            "http://p.njupt.edu.cn:80/2.htm?wlanuserip=&wlanacname=XL-BRAS-SR8806-X&wlanacip=10.255.252.150&mac=00-00"
-            "-00-00-00-00&session=&ACLogOut=5&ErrorMsg=Mg%3D%3D")
 
     def showof(self):
         print(self.schoolid, self.pas, self.opelist[self.operator])
@@ -138,12 +101,19 @@ class Loginof(object):
         response = requests.post(self.url if flag == 1 else self.wifiurl, self.data, self.header, proxies=proxies)
         rt = response.status_code
         print(response.url)
-        if response.url in self.warningmess:
-            return self.warningmess[response.url]
+        if re.search("ErrorMsg=", response.url) is None:
+            return 0
         else:
-            print(response.request)
-            print(self.url if flag == 1 else self.wifiurl)
-            print(wlan_type)
-            print(self.data)
-            print(self.header)
-            return 20
+            mess = response.url[re.search("ErrorMsg=", response.url).span()[1]:]
+            if mess == "Mg%3D%3D":
+                return 1
+            elif mess == "bGRhcCBhdXRoIGVycm9y":
+                return 2
+            elif mess == "NTEy":
+                return 3
+            elif mess == "dXNlcmlkIGVycm9yMQ%3D%3D":
+                return 4
+            elif mess == "QXV0aGVudGljYXRpb24gRmFpbCBFcnJDb2RlPTE2":
+                return 5
+            else:
+                return 20
