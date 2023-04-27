@@ -39,6 +39,10 @@ class Warningbox:
             self.messbox.information(mainwindow, 'Warning', '该时段无法登录！',
                                      QMessageBox.StandardButton.Ok,
                                      QMessageBox.StandardButton.Cancel)
+        elif self.wcode == 6:
+            self.messbox.information(mainwindow, 'Warning', '未连接网络，请检查网络连接！',
+                                     QMessageBox.StandardButton.Ok,
+                                     QMessageBox.StandardButton.Cancel)
         else:
             self.messbox.information(mainwindow, 'Warning', '未知问题，请联系开发者修补问题！',
                                      QMessageBox.StandardButton.Ok,

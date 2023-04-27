@@ -14,9 +14,14 @@ import warningbox
 def createsis(mainwindow, userid, pas, operator):
     # 创建会话类
     logina = loginin.Loginof(userid, pas, operator)
-    rt = logina.on_login()
-    wmess = warningbox.Warningbox(rt)
-    wmess.jugmess(mainwindow)
+    rt = 0
+    if logina.wlanip == "":
+        wmess = warningbox.Warningbox(6)
+        wmess.jugmess(mainwindow)
+    else:
+        rt = logina.on_login()
+        wmess = warningbox.Warningbox(rt)
+        wmess.jugmess(mainwindow)
     return rt
 
 
@@ -118,7 +123,7 @@ class systray(QSystemTrayIcon):
         self.actionlogin = QAction("Login", self)
         self.actionset.triggered.connect(self.showui)
         self.actionquit.triggered.connect(quitwin)
-        self.actionlogin.triggered.connect(lambda: self.onclicksub)
+        self.actionlogin.triggered.connect(lambda: self.onclicksub())
         self.mainwindow = mainwindow
         self.creatMenu()
         # 提交按钮

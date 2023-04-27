@@ -58,12 +58,16 @@ class Loginof(object):
         self.operator = operator
         result = os.popen("ipconfig").read()
         pat2 = "无线局域网适配器 WLAN:?\n.*\n.*\n.*\n.*IPv4 地址 [\. ]+:(.*)"
-        self.wlanip = re.findall(pat2, result)[0]
-        self.wlanip = ''.join(self.wlanip.split())
-        self.wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn" \
-                       "&iTermType=1&wlanuserip=" + self.wlanip + \
-                       "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=" + self.wlanip + \
-                       "&enAdvert=0&queryACIP=0&loginMethod=1"
+        if re.findall(pat2, result):
+            self.wlanip = re.findall(pat2, result)[0]
+            self.wlanip = ''.join(self.wlanip.split())
+            self.wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn&iTermType=1&wlanuserip=" + \
+                           self.wlanip + \
+                           "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=" + \
+                           self.wlanip + \
+                           "&enAdvert=0&queryACIP=0&loginMethod=1"
+        else:
+            self.wlanip = ""
 
     def showof(self):
         print(self.schoolid, self.pas, self.opelist[self.operator])
