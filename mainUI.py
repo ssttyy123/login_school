@@ -1,3 +1,5 @@
+import time
+
 from PyQt6 import QtGui, QtCore
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QAction
@@ -5,6 +7,7 @@ from PyQt6.QtWidgets import *
 
 import sys
 import os
+import re
 
 import loginin
 import logindata
@@ -15,6 +18,13 @@ def createsis(mainwindow, userid, pas, operator):
     # 创建会话类
     logina = loginin.Loginof(userid, pas, operator)
     rt = logina.on_login()
+    if rt[0] == 3:
+        for i in range(4):
+            time.sleep(2)
+            rt = logina.on_login()
+            if rt[0] != 3:
+                break
+
     wmess = warningbox.Warningbox(rt)
     wmess.jugmess(mainwindow)
 
@@ -159,6 +169,14 @@ class systray(QSystemTrayIcon):
     def showui(self):
         self.mainwindow.showNormal()
         self.mainwindow.activateWindow()
+
+
+def check_network():
+    osOutPut = os.popen("netsh WLAN show interfaces").read()
+    if len(re.findall(r"SSID", osOutPut)) != 0:
+        return True
+    else:
+        return False
 
 
 if __name__ == '__main__':

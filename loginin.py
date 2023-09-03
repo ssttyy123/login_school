@@ -1,7 +1,7 @@
+import json
 import re
 
 import requests
-import json
 
 
 class Loginof(object):
@@ -43,15 +43,6 @@ class Loginof(object):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
                       "Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.46"}
 
-    '''
-    0.You have successfully logged into our system.
-    1.IP already online
-    2.Failed to authenticate user
-    3.Please check the network configuration and confirm the account number and password is correct！ 
-    4.Account does not exist or not bind isp account.
-    20.unknowerr
-    '''
-
     opelist = {'中国移动': 'cmcc',
                '中国联通': 'njxy'}
 
@@ -62,15 +53,18 @@ class Loginof(object):
     def on_login(self):
         # proxies = {'http': None,
         #            'https': None}
-
-        response = requests.get(url=self.urlM, params=self.params, headers=self.header)
-        json_str = re.findall(r"dr1003\((.+?)\);", response.text)
-        print(json_str[0])
-        json_ob = json.loads(json_str[0])
         rt = ()
-        if int(json_ob["result"]) == 0:
-            rt = (0, json_ob["ret_code"])
-        elif int(json_ob["result"]) == 1:
-            rt = (1, 0)
-        print(response.text)
+        try:
+            response = requests.get(url=self.urlM, params=self.params, headers=self.header)
+            json_str = re.findall(r"dr1003\((.+?)\);", response.text)
+            print(json_str[0])
+            json_ob = json.loads(json_str[0])
+            if int(json_ob["result"]) == 0:
+                rt = (0, json_ob["ret_code"])
+            elif int(json_ob["result"]) == 1:
+                rt = (1, 0)
+            return rt
+        except requests.exceptions.SSLError:
+            print("no network")
+            rt = (3, 0)
         return rt
