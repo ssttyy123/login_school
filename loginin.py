@@ -1,44 +1,47 @@
-import os
 import re
-import time
 
 import requests
+import json
 
 
 class Loginof(object):
     wlanip = ""
 
-    wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn" \
-              "&iTermType=1&wlanuserip=" + wlanip + "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00" \
-                                                    "-00-00-00-00&ip=" + wlanip + "&enAdvert=0&queryACIP=0&loginMethod=1"
+    urlM = "https://p.njupt.edu.cn:802/eportal/portal/login/"
 
-    url = "http://10.10.244.11:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=10.10.244.11&iTermType=1" \
-          "&wlanuserip=10.161.164.49&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=10" \
-          ".161.164.49&enAdvert=0&queryACIP=0&loginMethod=1"
+    params = {
+        "callback": "dr1003",
+        "login_method": "1",
+        "user_account": "",
+        "user_password": "",
+        "wlan_user_ip": "10.161.164.49",
+        "wlan_user_ipv6": "",
+        "wlan_user_mac": "000000000000",
+        "wlan_ac_ip": "",
+        "wlan_ac_name": "",
+        "jsVersion": "4.1.3",
+        "terminal_type": "1",
+        "lang": "zh-cn",
+        "v": "5614"
+    }
 
-    data = {"DDDDD": "",
-            "upass": "",
-            "R1": "0",
-            "R2": "0",
-            "R3": "0",
-            "R6": "0",
-            "para": "00",
-            "0MKKey": "123456"}
-
-    header = {"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,"
-                        "application/signed-exchange;v=b3;q=0.7",
-              "Accept-Encoding": "gzip, deflate",
-              "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
-              "Cache-Control": "max-age=0",
-              "Connection": "close",
-              "Content-Length": "173",
-              "Content-Type": "application/x-www-form-urlencoded",
-              "Host": "10.10.244.11:801",
-              "Origin": "http://10.10.244.11",
-              "Referer": "http://10.10.244.11/",
-              "Upgrade-Insecure-Requests": "1",
-              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                            "Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.46"}
+    header = {
+        "authority": "p.njupt.edu.cn:802",
+        "method": "GET",
+        "path": "",
+        "scheme": "https",
+        "Accept": "*/*",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6",
+        "Referer": "https://p.njupt.edu.cn/",
+        "Sec-Ch-Ua": "\"Chromium\";v=\"116\", \"Not)A;Brand\";v=\"24\", \"Microsoft Edge\";v=\"116\"",
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": "Windows",
+        "Sec-Fetch-Dest": "script",
+        "Sec-Fetch-Mode": "no-cors",
+        "Sec-Fetch-Site": "same-site",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.46"}
 
     '''
     0.You have successfully logged into our system.
@@ -53,71 +56,21 @@ class Loginof(object):
                '中国联通': 'njxy'}
 
     def __init__(self, schoolid, pas, operator):
-        self.schoolid = schoolid
-        self.pas = pas
-        self.operator = operator
-        result = os.popen("ipconfig").read()
-        pat2 = "无线局域网适配器 WLAN:?\n.*\n.*\n.*\n.*IPv4 地址 [\. ]+:(.*)"
-        if re.findall(pat2, result):
-            self.wlanip = re.findall(pat2, result)[0]
-            self.wlanip = ''.join(self.wlanip.split())
-            self.wifiurl = "http://p.njupt.edu.cn:801/eportal/?c=ACSetting&a=Login&protocol=http:&hostname=p.njupt.edu.cn&iTermType=1&wlanuserip=" + \
-                           self.wlanip + \
-                           "&wlanacip=10.255.252.150&wlanacname=XL-BRAS-SR8806-X&mac=00-00-00-00-00-00&ip=" + \
-                           self.wlanip + \
-                           "&enAdvert=0&queryACIP=0&loginMethod=1"
-        else:
-            self.wlanip = ""
-
-    def showof(self):
-        print(self.schoolid, self.pas, self.opelist[self.operator])
+        self.params["user_account"] = ",0," + schoolid + "@" + self.opelist[operator]
+        self.params["user_password"] = pas
 
     def on_login(self):
-        self.data["DDDDD"] = ",0," + self.schoolid + "@" + self.opelist[self.operator]
-        self.data['upass'] = self.pas
-        proxies = {'http': None,
-                   'https': None}
-        # Wi-Fi mywlan 1/officwlan 2
-        flag = 0
-        result = os.popen('netsh WLAN show interfaces')
-        context = result.read()
-        if re.search("SSID                   :", context) is None:
-            while 1:
-                time.sleep(2)
-                result = os.popen('netsh WLAN show interfaces')
-                context = result.read()
-                if re.search("SSID                   :", context) is not None:
-                    break
+        # proxies = {'http': None,
+        #            'https': None}
 
-        wlan_type = context[re.search("SSID                   :", context).span()[1] + 1:
-                            re.search("BSSID", context).span()[0] - 5]
-        if wlan_type == "NJUPT-CMCC" or wlan_type == "NJUPT-CHINANET":
-            self.header["Host"] = "p.njupt.edu.cn:801"
-            self.header["Origin"] = "http://p.njupt.edu.cn"
-            self.header["Referer"] = "http://p.njupt.edu.cn/"
-            flag = 2
-        else:
-            self.header["Host"] = "10.10.244.11:801"
-            self.header["Origin"] = "http://10.10.244.11"
-            self.header["Referer"] = "http://10.10.244.11/"
-            flag = 1
-
-        response = requests.post(self.url if flag == 1 else self.wifiurl, self.data, self.header, proxies=proxies)
-        rt = response.status_code
-        print(response.url)
-        if re.search("ErrorMsg=", response.url) is None:
-            return 0
-        else:
-            mess = response.url[re.search("ErrorMsg=", response.url).span()[1]:]
-            if mess == "Mg%3D%3D":
-                return 1
-            elif mess == "bGRhcCBhdXRoIGVycm9y":
-                return 2
-            elif mess == "NTEy":
-                return 3
-            elif mess == "dXNlcmlkIGVycm9yMQ%3D%3D":
-                return 4
-            elif mess == "QXV0aGVudGljYXRpb24gRmFpbCBFcnJDb2RlPTE2":
-                return 5
-            else:
-                return 20
+        response = requests.get(url=self.urlM, params=self.params, headers=self.header)
+        json_str = re.findall(r"dr1003\((.+?)\);", response.text)
+        print(json_str[0])
+        json_ob = json.loads(json_str[0])
+        rt = ()
+        if int(json_ob["result"]) == 0:
+            rt = (0, json_ob["ret_code"])
+        elif int(json_ob["result"]) == 1:
+            rt = (1, 0)
+        print(response.text)
+        return rt

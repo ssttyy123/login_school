@@ -14,14 +14,10 @@ import warningbox
 def createsis(mainwindow, userid, pas, operator):
     # 创建会话类
     logina = loginin.Loginof(userid, pas, operator)
-    rt = 0
-    if logina.wlanip == "":
-        wmess = warningbox.Warningbox(6)
-        wmess.jugmess(mainwindow)
-    else:
-        rt = logina.on_login()
-        wmess = warningbox.Warningbox(rt)
-        wmess.jugmess(mainwindow)
+    rt = logina.on_login()
+    wmess = warningbox.Warningbox(rt)
+    wmess.jugmess(mainwindow)
+
     return rt
 
 
@@ -56,7 +52,7 @@ class Mainwindow(QWidget):
 
         # 运营商选择
         self.text_oper = QLabel('Select operator:')
-        self.op_cbb = QComboBox()
+        self.op_cbb = QComboBox(self)
         self.op_cbb.addItem("中国移动")
         self.op_cbb.addItem("中国联通")
 
@@ -140,7 +136,7 @@ class systray(QSystemTrayIcon):
             elif not self.mainwindow.startCheckbox.isChecked():
                 writinpath("close")
                 self.autoflag = 0
-            if rt <= 1:
+            if (rt[0] == 1) or (rt[0] == 0 and rt[1] == 2):
                 self.mainwindow.database.changefault(self.mainwindow.enter_userid.text(),
                                                      self.mainwindow.enter_pas.text(),
                                                      self.mainwindow.op_cbb.currentIndex(),

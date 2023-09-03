@@ -1,14 +1,4 @@
 from PyQt6.QtWidgets import *
-import time
-
-'''
-0.You have successfully logged into our system.
-1.IP already online
-2.Failed to authenticate user
-3.Please check the network configuration and confirm the account number and password is correct！ 
-4.Account does not exist or not bind isp account.
-20.unknowerr
-'''
 
 
 class Warningbox:
@@ -16,34 +6,19 @@ class Warningbox:
         self.wcode = wtype
         self.messbox = QMessageBox()
 
+    @classmethod
+    def popWin(cls, mainwindow, mes, messbox):
+        messbox.information(mainwindow, 'Warning', mes,
+                            QMessageBox.StandardButton.Ok,
+                            QMessageBox.StandardButton.Cancel)
+
     def jugmess(self, mainwindow):
-        if self.wcode == 0:
+        if self.wcode[0] == 1:
             pass
-        elif self.wcode == 1:
-            self.messbox.information(mainwindow, 'Online', 'IP已经在线',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
-        elif self.wcode == 2:
-            self.messbox.information(mainwindow, 'Warning', '请检查学号或者密码是否错误！',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
-        elif self.wcode == 3:
-            self.messbox.information(mainwindow, 'Warning', '网络连接错误或者账号密码错误！',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
-        elif self.wcode == 4:
-            self.messbox.information(mainwindow, 'Warning', '运营商不存在该账户！',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
-        elif self.wcode == 5:
-            self.messbox.information(mainwindow, 'Warning', '该时段无法登录！',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
-        elif self.wcode == 6:
-            self.messbox.information(mainwindow, 'Warning', '未连接网络，请检查网络连接！',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
+        elif self.wcode[0] == 0:
+            if self.wcode[1] == 1:
+                self.popWin(mainwindow, "已登录", self.messbox)
+            elif self.wcode[1] == 2:
+                self.popWin(mainwindow, "请检查学号或者密码是否错误！", self.messbox)
         else:
-            self.messbox.information(mainwindow, 'Warning', '未知问题，请联系开发者修补问题！',
-                                     QMessageBox.StandardButton.Ok,
-                                     QMessageBox.StandardButton.Cancel)
+            self.popWin(mainwindow, "未知问题，请联系开发者修补问题！", self.messbox)
